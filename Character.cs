@@ -1,81 +1,130 @@
-﻿
-public class Character
-    {
-    public string playerName;
-    public int playerLevel;
-    public int playerExperiencePoints;
-    public int playerHealthPoints;
-    public int playerManaPoints;
-    public int playerGold;
-
-    public Character(){
-        playerName = "";
-        playerLevel = 0;
-        playerExperiencePoints = 0;
-        playerHealthPoints = 0;
-        playerManaPoints = 0;
-        playerGold = 0;
+﻿namespace Rpg
+{
+    public class Character
+        {
+            public virtual void useAttack()
+            {
+                Console.WriteLine("performs a basic attack.");
+            }
         }
-            
-    public void setName(string newplayerName){
-        playerName = newplayerName;
-        }
+    public class Player : Character
+        {
+        public string playerName;
+        public int playerLevel;
+        public int playerExperiencePoints;
+        public int playerHealthPoints;
+        public int playerManaPoints;
+        public int playerGold;
+        public int playerWeaponDamage;
 
-    public string getName(){
-        return playerName;
-        }
+        public Player(){
+            playerName = "";
+            playerLevel = 0;
+            playerExperiencePoints = 0;
+            playerHealthPoints = 0;
+            playerManaPoints = 0;
+            playerGold = 0;
+            playerWeaponDamage = 0;
+            }
+                
+        public void setName(string newplayerName){
+            playerName = newplayerName;
+            }
 
-     //Levels       
-    public void setLevel(int newPlayerLevel){
-        playerLevel = newPlayerLevel;
-        }
+        public string getName(){
+            return playerName;
+            }
 
-    public int getLevel(){
-        return playerLevel;
-    }
+        //Levels       
+        public void setLevel(int newPlayerLevel){
+            playerLevel = newPlayerLevel;
+            }
 
-     //ExperiencePoints
-    public void setExperiencePoints(int updatedPlayerExperiencePoints){
-        playerExperiencePoints = updatedPlayerExperiencePoints;
-        }
-
-    public int getExperiencePoints(){
-        return playerExperiencePoints;
-        }
-
-    //HealthPoints
-    public void setPlayerHealthPoints(int newPlayerHealthPoints){
-        playerHealthPoints = newPlayerHealthPoints;
+        public int getLevel(){
+            return playerLevel;
         }
 
-    public int getPlayerHealthPoints(){
-        return playerHealthPoints;
-        } 
+        //ExperiencePoints
+        public void setExperiencePoints(int updatedPlayerExperiencePoints){
+            playerExperiencePoints = updatedPlayerExperiencePoints;
+            }
 
-    //ManaPoints
-    public void setPlayerManaPoints(int newPlayerManaPoints){
-        playerManaPoints = newPlayerManaPoints;
+        public int getExperiencePoints(){
+            return playerExperiencePoints;
+            }
+
+        //HealthPoints
+        public void setPlayerHealthPoints(int newPlayerHealthPoints){
+            playerHealthPoints = newPlayerHealthPoints;
+            }
+
+        public int getPlayerHealthPoints(){
+            return playerHealthPoints;
+            } 
+
+        //ManaPoints
+        public void setPlayerManaPoints(int newPlayerManaPoints){
+            playerManaPoints = newPlayerManaPoints;
+            }
+
+        public int getPlayerManaPoints(){
+            return playerManaPoints;
+            } 
+
+        //Gold
+        public void setPlayerGold(int newPlayerGold){
+            playerGold = newPlayerGold;
+            }
+
+        public int getPlayerGold(){
+            return playerGold;
+            } 
+
+        //Methods
+        public int levelUp(){
+            playerLevel += 1;
+            return playerLevel;
         }
 
-    public int getPlayerManaPoints(){
-        return playerManaPoints;
-        } 
-
-    //Gold
-    public void setPlayerGold(int newPlayerGold){
-        playerGold = newPlayerGold;
+        public int gainExperience(){
+            playerExperiencePoints += 1;
+            return playerExperiencePoints;
         }
 
-    public int getPlayerGold(){
-        return playerGold;
-        } 
+        public void GainExperience(int enemyExperience)
+        {
+            playerExperiencePoints += enemyExperience;
+        }
 
-    //Methods
-    public int levelUp(){
-        PlayerLevel += 1;
-        return PlayerLevel;
-    }
+        public void TakeDamage(int nonPlayerDamage)
+        {
+            playerHealthPoints -= nonPlayerDamage;
+        }
 
+        //Abilities
+        public override void useAttack()
+        {
+            Console.WriteLine($"{playerName} performs a basic attack.");
+        }
+        public virtual void useSkill1()
+        {
+            Console.WriteLine($"{playerName} uses Skill 1.");
+        }
 
+        public virtual void useSkill2()
+        {
+            Console.WriteLine($"{playerName} uses Skill 2.");
+        }
 
-} 
+        public virtual void useSkill3()
+        {
+            Console.WriteLine($"{playerName} uses Skill 3.");
+        }
+
+        public virtual void useSkill4()
+        {
+            Console.WriteLine($"{playerName} uses Skill 4.");
+        }
+       } 
+}
+

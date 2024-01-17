@@ -1,0 +1,4 @@
+D:\Visual Studio Code - Projects\C#\ΕΡΓΑΣΙΑ RPG\obj\Debug\net7.0\ΕΡΓΑΣΙΑ RPG.GeneratedMSBuildEditorConfig.editorconfig
+D:\Visual Studio Code - Projects\C#\ΕΡΓΑΣΙΑ RPG\obj\Debug\net7.0\ΕΡΓΑΣΙΑ RPG.AssemblyInfoInputs.cache
+D:\Visual Studio Code - Projects\C#\ΕΡΓΑΣΙΑ RPG\obj\Debug\net7.0\ΕΡΓΑΣΙΑ RPG.AssemblyInfo.cs
+D:\Visual Studio Code - Projects\C#\ΕΡΓΑΣΙΑ RPG\obj\Debug\net7.0\ΕΡΓΑΣΙΑ RPG.csproj.CoreCompileInputs.cache
