@@ -37,8 +37,12 @@ public class TurnBasedCombat : MonoBehaviour
 
     public bool IsCombatActive => isCombatActive;
 
-    void Start()
+    public playerMovement playerMovement;
+
+ void Start()
     {
+        playerMovement = FindObjectOfType<playerMovement>();
+
         // Assuming playerTransform is set to the reference of the player's transform
         if (playerTransform != null)
         {
@@ -47,7 +51,12 @@ public class TurnBasedCombat : MonoBehaviour
             // Check if the player is within the combat distance
             if (distanceToPlayer <= combatDistance)
             {
-                StartCombat();
+                Debug.Log("Player within combat distance. Starting combat.");
+                StartCombat(); // Start combat if player is within distance
+            }
+            else
+            {
+                Debug.Log("Player not within combat distance.");
             }
         }
         else
@@ -58,8 +67,12 @@ public class TurnBasedCombat : MonoBehaviour
 
     IEnumerator StartCombat()
     {
+        Debug.Log("Combat started."); // Add debug statement
+
         // Set combat active flag
         isCombatActive = true;
+        skipMovementButton.gameObject.SetActive(true);
+
         // Instantiate the enemy character if it's not already assigned
         if (enemyCharacter == null)
         {
@@ -85,10 +98,13 @@ public class TurnBasedCombat : MonoBehaviour
             // Move to the next participant
             currentPlayerIndex = (currentPlayerIndex + 1) % participants.Length;
             playerActionCompleted = false; // Reset player action flag
-
-            // Set combat inactive flag after combat is over
-            isCombatActive = false;
         }
+
+        // Set combat inactive flag after combat is over
+        isCombatActive = false;
+        skipMovementButton.gameObject.SetActive(false);
+
+        Debug.Log("Combat ended."); // Add debug statement
     }
 
     bool IsCombatOver()
@@ -192,41 +208,18 @@ public class TurnBasedCombat : MonoBehaviour
 
     bool PlayerMoved(Player player)
     {
-        if (skipMovementButtonClicked)
+        // Check if the player has moved within the allowed distance using the playerMovement script
+        if (playerMovement != null && playerMovement.HasPlayerMovedWithinDistance(maxMoveDistance))
         {
-            // Player chose to skip movement
+            // Player moved within the allowed distance
             return true;
         }
-
-        // Set the target position to the point where the ray hits
-        Vector3 targetPosition = Vector3.zero;
-        if (Input.GetMouseButtonDown(1))
+        else
         {
-            // Cast a ray from the mouse position into the scene
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-
-            // Check if the ray hits something
-            if (Physics.Raycast(ray, out hit))
-            {
-                // Set the target position to the point where the ray hits
-                targetPosition = hit.point;
-            }
+            // Player did not move within the allowed distance
+            Debug.Log("Player did not move within the allowed distance.");
+            return false;
         }
-
-        // Calculate the new position after movement
-        Vector3 newPosition = player.transform.position + (targetPosition - player.transform.position).normalized * moveDistance;
-
-        // Check if the new position is within the allowed movement range
-        if (Vector3.Distance(player.transform.position, newPosition) <= maxMoveDistance)
-        {
-            // Move the player
-            player.transform.position = newPosition;
-            return true; // Player moved successfully
-        }
-
-        // Player cannot move beyond the allowed distance
-        return false;
     }
 
     void SkipMovement()
