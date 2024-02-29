@@ -1,85 +1,47 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
+using System.Collections.Generic;
 
-public class combatManager : MonoBehaviour
+public class CombatManager : MonoBehaviour
 {
-    public GameObject[] playerPrefabs; // Array of player prefabs (warrior, mage, rogue)
-    public GameObject[] enemyPrefabs; // Array of enemy prefabs
+    public GameObject[] playerPrefabs;
+    public GameObject[] enemyPrefabs;
     public Slider playerHealthSlider;
     public Slider playerManaSlider;
     public Slider enemyHealthSlider;
+    public List<Button> playerActionButtons;
+
+    private Player player;
+    private NonPlayer enemy;
+    private bool playerActionTaken = false;
+
+    private enum BattleState { START, PLAYER_TURN, ENEMY_TURN, END }
+    private BattleState currentState;
 
     private void Start()
     {
-        // Spawn the player prefab based on the selected class
         SpawnPlayer();
-
-        // Spawn the active enemy prefab
         SpawnActiveEnemy();
+        EnablePlayerActionButtons();
+
+        currentState = BattleState.START;
+        StartCoroutine(BattleLoop());
     }
 
     private void SpawnPlayer()
     {
-        // Find the player object with the "Player" tag
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
 
-        if (player != null)
+        if (playerObject != null)
         {
             Debug.Log("Player found.");
 
-            // Set the player's position
-            player.transform.position = new Vector3(0f, 0f, 5f);
+            playerObject.transform.position = new Vector3(0f, 0f, 5f);
 
-            // Disable the PlayerController script
-            PlayerController playerController = player.GetComponent<PlayerController>();
-            if (playerController != null)
-            {
-                playerController.enabled = false;
-                Debug.Log("PlayerController script disabled.");
-            }
-            else
-            {
-                Debug.LogError("PlayerController script not found on the player.");
-            }
-
-            // Disable the PlayerInteraction script
-            PlayerInteraction playerInteraction = player.GetComponent<PlayerInteraction>();
-            if (playerInteraction != null)
-            {
-                playerInteraction.enabled = false;
-                Debug.Log("PlayerInteraction script disabled.");
-            }
-            else
-            {
-                Debug.LogError("PlayerInteraction script not found on the player.");
-            }
-
-           // Get the component based on the player's class
-            if (player.GetComponent<Warrior>() != null)
-            {
-                // If the player is a warrior
-                Warrior warriorComponent = player.GetComponent<Warrior>();
-                UpdateHealthSlider(warriorComponent.getPlayerHealthPoints());
-                UpdateManaSlider(warriorComponent.getPlayerManaPoints());
-            }
-            else if (player.GetComponent<Mage>() != null)
-            {
-                // If the player is a mage
-                Mage mageComponent = player.GetComponent<Mage>();
-                UpdateHealthSlider(mageComponent.getPlayerHealthPoints());
-                UpdateManaSlider(mageComponent.getPlayerManaPoints());
-            }
-            else if (player.GetComponent<Rogue>() != null)
-            {
-                // If the player is a rogue
-                Rogue rogueComponent = player.GetComponent<Rogue>();
-                UpdateHealthSlider(rogueComponent.getPlayerHealthPoints());
-                UpdateManaSlider(rogueComponent.getPlayerManaPoints());
-            }
-            else
-            {
-                Debug.LogError("Player class not recognized.");
-            }
+            player = playerObject.GetComponent<Player>();
+            UpdateHealthSlider(playerHealthSlider, player.getPlayerHealthPoints());
+            UpdateManaSlider(playerManaSlider, player.getPlayerManaPoints());
         }
         else
         {
@@ -87,104 +49,189 @@ public class combatManager : MonoBehaviour
         }
     }
 
-
     private void SpawnActiveEnemy()
-{
-    // Get the active enemy ID from PlayerPrefs
-    int activeEnemyID = PlayerPrefs.GetInt("ActiveEnemyID");
-
-    // Find existing enemy objects with the "Enemy" tag
-    GameObject[] existingEnemies = GameObject.FindGameObjectsWithTag("Enemy");
-
-    if (existingEnemies.Length > 0)
     {
-        // Iterate through existing enemies to find the one with the matching ID
-        foreach (GameObject enemy in existingEnemies)
+        int activeEnemyID = PlayerPrefs.GetInt("ActiveEnemyID", -1);
+
+        if (activeEnemyID >= 0 && activeEnemyID < enemyPrefabs.Length)
         {
-            NonPlayer enemyComponent = enemy.GetComponent<NonPlayer>();
-            if (enemyComponent != null && enemyComponent.enemyID == activeEnemyID)
+            GameObject enemyPrefab = enemyPrefabs[activeEnemyID];
+
+            if (enemyPrefab != null)
             {
-                // If an existing enemy with the matching ID is found, update its position
-                Debug.Log($"Updating position of existing enemy with ID: {activeEnemyID}");
+                GameObject enemyObject = Instantiate(enemyPrefab, new Vector3(5f, 0f, 5f), Quaternion.identity);
+                Debug.Log("New enemy spawned.");
 
-                // Move the enemy to the new position
-                enemy.transform.position = new Vector3(5f, 0f, 5f); // Change the position as needed
+                enemy = enemyObject.GetComponent<NonPlayer>();
 
-                // Update the enemy's health slider
-                UpdateEnemyHealthSlider(enemyComponent);
+                UpdateEnemyHealthSlider(enemy);
+            }
+            else
+            {
+                Debug.LogError("Enemy prefab is null.");
+            }
+        }
+        else
+        {
+            Debug.LogError("Invalid active enemy ID: " + activeEnemyID);
+        }
+    }
 
-                return; // Exit the method after updating the enemy
+    private void UpdateHealthSlider(Slider slider, float healthPoints)
+    {
+        if (slider != null)
+        {
+            slider.value = healthPoints;
+            Debug.Log("Health slider updated.");
+        }
+        else
+        {
+            Debug.LogError("Slider reference is missing.");
+        }
+    }
+
+    private void UpdateManaSlider(Slider slider, float manaPoints)
+    {
+        if (slider != null)
+        {
+            slider.value = manaPoints;
+            Debug.Log("Mana slider updated.");
+        }
+        else
+        {
+            Debug.LogError("Slider reference is missing.");
+        }
+    }
+
+    private void UpdateEnemyHealthSlider(NonPlayer enemy)
+    {
+        if (enemy != null && enemyHealthSlider != null)
+        {
+            enemyHealthSlider.value = enemy.nonPlayerHealthPoints;
+            Debug.Log("Enemy health slider updated.");
+        }
+        else
+        {
+            Debug.LogError("Enemy reference or enemy health slider reference is missing.");
+        }
+    }
+
+    private void EnablePlayerActionButtons()
+    {
+        foreach (Button button in playerActionButtons)
+        {
+            button.onClick.AddListener(() => OnPlayerActionButtonClicked(button));
+            button.interactable = true;
+        }
+    }
+
+    private void DisablePlayerActionButtons()
+    {
+        foreach (Button button in playerActionButtons)
+        {
+            button.interactable = false;
+        }
+    }
+
+    private IEnumerator BattleLoop()
+    {
+        while (currentState != BattleState.END)
+        {
+            switch (currentState)
+            {
+                case BattleState.START:
+                    Debug.Log("Combat begins!");
+                    currentState = BattleState.PLAYER_TURN;
+                    break;
+                case BattleState.PLAYER_TURN:
+                    Debug.Log("Player's turn.");
+                    yield return StartCoroutine(PlayerTurn());
+                    currentState = BattleState.ENEMY_TURN;
+                    break;
+                case BattleState.ENEMY_TURN:
+                    Debug.Log("Enemy's turn.");
+                    yield return StartCoroutine(EnemyTurn());
+                    currentState = BattleState.PLAYER_TURN;
+                    break;
+                case BattleState.END:
+                    Debug.Log("Combat ends!");
+                    // Add logic for ending the combat
+                    break;
             }
         }
     }
 
-    // If no existing enemy with the matching ID is found, spawn a new enemy prefab
-    if (activeEnemyID >= 0 && activeEnemyID < enemyPrefabs.Length)
+    private void OnPlayerActionButtonClicked(Button clickedButton)
     {
-        GameObject enemyPrefab = enemyPrefabs[activeEnemyID];
-        if (enemyPrefab != null)
+        if (!playerActionTaken)
         {
-            // Instantiate the enemy prefab
-            GameObject enemy = Instantiate(enemyPrefab, new Vector3(5f, 0f, 5f), Quaternion.identity);
-            Debug.Log("New enemy spawned.");
+            playerActionTaken = true;
 
-            // Set the position of the enemy based on the spawn position
-            // Set other properties of the enemy as needed
-        }
-        else
-        {
-            Debug.LogError("Enemy prefab is null.");
-        }
-    }
-    else
-    {
-        Debug.LogError("Invalid active enemy ID: " + activeEnemyID);
-    }
-}
+            DisablePlayerActionButtons(); // Disable all action buttons
 
+            // Determine which button was clicked and execute corresponding logic
+            if (clickedButton == playerActionButtons[0])
+            {
+                Debug.Log("Player selected action 1.");
+            }
+            else if (clickedButton == playerActionButtons[1])
+            {
+                Debug.Log("Player selected action 2.");
+            }
+            else if (clickedButton == playerActionButtons[2])
+            {
+                Debug.Log("Player selected action 3.");
+            }
+            else if (clickedButton == playerActionButtons[3])
+            {
+                Debug.Log("Player selected action 4.");
+            }
+            else if (clickedButton == playerActionButtons[4])
+            {
+                Debug.Log("Player selected action 5.");
+            }
 
-    // Method to update the health slider with the given health points
-    private void UpdateHealthSlider(float healthPoints)
-    {
-        if (playerHealthSlider != null)
-        {
-            // Update the player's health slider value based on the player's health points
-            playerHealthSlider.value = healthPoints;
-            Debug.Log("Player health slider updated.");
-        }
-        else
-        {
-            Debug.LogError("Player health slider reference is missing.");
+            // Proceed to the enemy's turn after player action
+            StartCoroutine(EndPlayerTurn());
         }
     }
 
-    // Method to update the mana slider with the given mana points
-    private void UpdateManaSlider(float manaPoints)
+    private IEnumerator EndPlayerTurn()
     {
-        if (playerManaSlider != null)
+        yield return new WaitForSeconds(1f); // Simulated delay before transitioning to enemy's turn
+        currentState = BattleState.ENEMY_TURN;
+    }
+
+    private IEnumerator PlayerTurn()
+    {
+        EnablePlayerActionButtons(); // Enable player action buttons
+        Debug.Log("Player's turn.");
+
+        // Reset the flag for the next player turn
+        playerActionTaken = false;
+
+        // Wait for player action
+        while (!playerActionTaken)
         {
-            // Update the player's mana slider value based on the player's mana points
-            playerManaSlider.value = manaPoints;
-            Debug.Log("Player mana slider updated.");
-        }
-        else
-        {
-            Debug.LogError("Player mana slider reference is missing.");
+            // Wait for the next frame
+            yield return null;
         }
     }
 
-    // Method to update the health slider with the given health points for the enemy
-    private void UpdateEnemyHealthSlider(NonPlayer enemy)
+    private IEnumerator EnemyTurn()
     {
-    if (playerHealthSlider != null)
-    {
-        // Update the enemy's health slider value based on the enemy's current health points
-        playerHealthSlider.value = enemy.nonPlayerHealthPoints;
-        Debug.Log("Enemy health slider updated.");
+        Debug.Log("Enemy's turn.");
+        //enemy.useAttack();
+        Debug.Log("Enemy attacks!");
+
+        yield return new WaitForSeconds(1f); // Simulated delay before transitioning to player's turn
+        Debug.Log("End of enemy's turn.");
     }
-    else
+
+    private void EndBattle(bool playerWins)
     {
-        Debug.LogError("Player health slider reference is missing.");
-    }
+        currentState = BattleState.END;
+        Debug.Log(playerWins ? "Player wins!" : "Player loses!");
+        // Add logic for ending the battle based on the result
     }
 }
