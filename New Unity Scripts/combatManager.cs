@@ -51,31 +51,30 @@ public class CombatManager : MonoBehaviour
 
     private void SpawnActiveEnemy()
     {
-        int activeEnemyID = PlayerPrefs.GetInt("ActiveEnemyID", -1);
+        int activeEnemyID = PlayerPrefs.GetInt("ActiveEnemyID");
 
-        if (activeEnemyID >= 0 && activeEnemyID < enemyPrefabs.Length)
+        // Find all game objects with the "Enemy" tag
+        GameObject[] existingEnemies = GameObject.FindGameObjectsWithTag("Enemy");
+
+        foreach (GameObject enemyObject in existingEnemies)
         {
-            GameObject enemyPrefab = enemyPrefabs[activeEnemyID];
-
-            if (enemyPrefab != null)
+            NonPlayer enemyComponent = enemyObject.GetComponent<NonPlayer>();
+            
+            // Check if the enemy's ID matches the activeEnemyID
+            if (enemyComponent != null && enemyComponent.enemyID == activeEnemyID)
             {
-                GameObject enemyObject = Instantiate(enemyPrefab, new Vector3(5f, 0f, 5f), Quaternion.identity);
-                Debug.Log("New enemy spawned.");
-
-                enemy = enemyObject.GetComponent<NonPlayer>();
-
+                // Set the enemy prefab position and update health slider
+                enemyObject.transform.position = new Vector3(5f, 0f, 5f);
+                Debug.Log("Existing enemy found with ID: " + activeEnemyID);
+                enemy = enemyComponent; // Assign the enemy component
                 UpdateEnemyHealthSlider(enemy);
-            }
-            else
-            {
-                Debug.LogError("Enemy prefab is null.");
+                return; // Exit the method after finding the matching enemy
             }
         }
-        else
-        {
-            Debug.LogError("Invalid active enemy ID: " + activeEnemyID);
-        }
+
+        Debug.LogError("No existing enemy found with ID: " + activeEnemyID);
     }
+
 
     private void UpdateHealthSlider(Slider slider, float healthPoints)
     {
@@ -172,23 +171,33 @@ public class CombatManager : MonoBehaviour
             // Determine which button was clicked and execute corresponding logic
             if (clickedButton == playerActionButtons[0])
             {
+                int damage = player.useAttack();
                 Debug.Log("Player selected action 1.");
+                enemy.TakeDamage(damage);
             }
             else if (clickedButton == playerActionButtons[1])
             {
+                int damage = player.useSkill1();
                 Debug.Log("Player selected action 2.");
+                enemy.TakeDamage(damage);
             }
             else if (clickedButton == playerActionButtons[2])
             {
+                int damage = player.useSkill2();
                 Debug.Log("Player selected action 3.");
+                enemy.TakeDamage(damage);
             }
             else if (clickedButton == playerActionButtons[3])
             {
+                int damage = player.useSkill3();
                 Debug.Log("Player selected action 4.");
+                enemy.TakeDamage(damage);
             }
             else if (clickedButton == playerActionButtons[4])
             {
+                int damage = player.useSkill4();
                 Debug.Log("Player selected action 5.");
+                enemy.TakeDamage(damage);
             }
 
             // Proceed to the enemy's turn after player action
@@ -216,6 +225,13 @@ public class CombatManager : MonoBehaviour
             // Wait for the next frame
             yield return null;
         }
+
+          // Check if the enemy's health points are zero
+        if (enemy.nonPlayerHealthPoints <= 0)
+        {
+            EndBattle(true); // Player wins
+            yield break; // Exit the coroutine
+        }
     }
 
     private IEnumerator EnemyTurn()
@@ -225,6 +241,14 @@ public class CombatManager : MonoBehaviour
         Debug.Log("Enemy attacks!");
 
         yield return new WaitForSeconds(1f); // Simulated delay before transitioning to player's turn
+
+        // Check if the player's health points are zero
+        if (player.getPlayerHealthPoints() <= 0)
+        {
+            EndBattle(false); // Player loses
+            yield break; // Exit the coroutine
+        }
+
         Debug.Log("End of enemy's turn.");
     }
 
@@ -232,6 +256,18 @@ public class CombatManager : MonoBehaviour
     {
         currentState = BattleState.END;
         Debug.Log(playerWins ? "Player wins!" : "Player loses!");
+
         // Add logic for ending the battle based on the result
+        if (playerWins)
+        {
+            // Player wins - handle the victory scenario
+            Debug.Log("Victory! Implement logic to reward the player, such as gaining experience points, looting items, etc.");
+        }
+        else
+        {
+            // Player loses - handle the defeat scenario
+            Debug.Log("Defeat! Implement logic for what happens when the player loses, such as game over, returning to a checkpoint, etc.");
+        }
     }
+
 }

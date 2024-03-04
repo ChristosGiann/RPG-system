@@ -2,28 +2,37 @@ using UnityEngine;
 
 public class Warrior : Player
     {
-        public override void useAttack()
+        public override int useAttack()
         {
-            Debug.Log($"{playerName} performs a powerful melee attack!");
+            int damage = 25;
+            Debug.Log($"{playerName} performs a heavy melee attack!");
+            return damage;
         }
-        public override void useSkill1()
+        public override int useSkill1()
         {
-            Debug.Log($"{playerName} uses Skill 1.");
-        }
-
-        public override void useSkill2()
-        {
-            Debug.Log($"{playerName} uses Skill 2.");
-        }
-
-        public override void useSkill3()
-        {
-            Debug.Log($"{playerName} uses Skill 3.");
+            int damage = 30;
+            Debug.Log($"{playerName} uses Rending Strike, dealing {damage} damage.");
+            return damage;
         }
 
-        public override void useSkill4()
+        public override int useSkill2()
         {
-            Debug.Log($"{playerName} uses Skill 4.");
+            int damage = 20;
+            Debug.Log($"{playerName} uses Puncture, dealing {damage} damage.");
+            return damage;
         }
 
+        public override int useSkill3()
+        {
+            int damage = 10;
+            Debug.Log($"{playerName} uses Stomp, dealing {damage} damage.");
+            return damage;
+        }
+
+        public override int useSkill4()
+        {
+            int damage = 30;
+            Debug.Log($"{playerName} uses Whirlwind, dealing {damage} damage.");
+            return damage;
+        }
     }

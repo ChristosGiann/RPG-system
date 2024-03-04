@@ -4,9 +4,10 @@ using UnityEngine;
 
     public class Character : MonoBehaviour
         {
-            public virtual void useAttack()
+            public virtual int useAttack()
             {
                 Debug.Log("performs a basic attack.");
+                return 0;
             }
         }
     public class Player : Character
@@ -111,28 +112,33 @@ using UnityEngine;
         }
 
         //Abilities
-        public override void useAttack()
+        public override int useAttack()
         {
             Debug.Log($"{playerName} performs a basic attack.");
+            return 0;
         }
-        public virtual void useSkill1()
+        public virtual int useSkill1()
         {
             Debug.Log($"{playerName} uses Skill 1.");
+            return 0;
         }
 
-        public virtual void useSkill2()
+        public virtual int useSkill2()
         {
             Debug.Log($"{playerName} uses Skill 2.");
+            return 0;
         }
 
-        public virtual void useSkill3()
+        public virtual int useSkill3()
         {
             Debug.Log($"{playerName} uses Skill 3.");
+            return 0;
         }
 
-        public virtual void useSkill4()
+        public virtual int useSkill4()
         {
             Debug.Log($"{playerName} uses Skill 4.");
+            return 0;
         }
        } 
 
@@ -163,11 +169,10 @@ public class NonPlayer : Character
                 targetPlayer = player; 
             }
                 
-        public override void useAttack()
+        public override int useAttack()
             {
                 Debug.Log("Attacks player");
-                // Assuming there is a reference to the player object, adjust the following line accordingly
-                targetPlayer.TakeDamage(nonPlayerDamage);
+                return nonPlayerDamage;
             }
 
         //Damage
