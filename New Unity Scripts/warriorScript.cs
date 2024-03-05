@@ -4,7 +4,7 @@ public class Warrior : Player
     {
         public override int useAttack()
         {
-            int damage = 25;
+            int damage = playerWeaponDamage;
             Debug.Log($"{playerName} performs a heavy melee attack!");
             return damage;
         }

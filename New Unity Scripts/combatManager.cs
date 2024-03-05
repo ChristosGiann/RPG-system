@@ -237,7 +237,7 @@ public class CombatManager : MonoBehaviour
     private IEnumerator EnemyTurn()
     {
         Debug.Log("Enemy's turn.");
-        //enemy.useAttack();
+        player.TakeDamage(enemy.nonPlayerDamage);
         Debug.Log("Enemy attacks!");
 
         yield return new WaitForSeconds(1f); // Simulated delay before transitioning to player's turn

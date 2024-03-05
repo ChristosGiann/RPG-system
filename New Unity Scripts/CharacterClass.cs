@@ -180,24 +180,12 @@ public class NonPlayer : Character
         {
             nonPlayerHealthPoints -= playerWeaponDamage;
             Debug.Log("NonPlayer takes damage");
-
-            //Death
-            if (nonPlayerHealthPoints <= 0)
-            {
-                NpcDeath();
-            }
         }
 
         //Loot
         public string DropLoot()
         {
             return loot;
-        }
-
-        //Death
-        private void NpcDeath()
-        {
-            Debug.Log("NonPlayer dies");
         }
 
 }

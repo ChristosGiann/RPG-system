@@ -4,7 +4,7 @@ public class Mage : Player
 {
     public override int useAttack()
     {
-        int damage = 10;
+        int damage = playerWeaponDamage;
         Debug.Log($"{playerName} performs a weak melee attack!");
         return damage;
     }

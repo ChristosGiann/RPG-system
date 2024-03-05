@@ -3,7 +3,7 @@ using UnityEngine;
     {
         public override int useAttack()
         {
-            int damage = 40;
+            int damage = playerWeaponDamage;
             Debug.Log($"{playerName} performs a critical melee attack!");
             return damage;
         }
