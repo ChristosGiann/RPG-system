@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class CombatManager : MonoBehaviour
 {
@@ -40,8 +41,8 @@ public class CombatManager : MonoBehaviour
             playerObject.transform.position = new Vector3(0f, 0f, 5f);
 
             player = playerObject.GetComponent<Player>();
-            UpdateHealthSlider(playerHealthSlider, player.getPlayerHealthPoints());
-            UpdateManaSlider(playerManaSlider, player.getPlayerManaPoints());
+            UpdateHealthSlider(playerHealthSlider, player.getPlayerCurrentHealthPoints(), player.getPlayerHealthPoints());
+            UpdateManaSlider(playerManaSlider, player.getPlayerCurrentManaPoints(), player.getPlayerManaPoints());
         }
         else
         {
@@ -76,11 +77,12 @@ public class CombatManager : MonoBehaviour
     }
 
 
-    private void UpdateHealthSlider(Slider slider, float healthPoints)
+    private void UpdateHealthSlider(Slider slider, float currentHealthPoints, float maxHealthPoints)
     {
         if (slider != null)
         {
-            slider.value = healthPoints;
+            slider.maxValue = maxHealthPoints; // Set the maximum value of the slider
+            slider.value = currentHealthPoints; // Set the current value of the slider
             Debug.Log("Health slider updated.");
         }
         else
@@ -89,11 +91,12 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-    private void UpdateManaSlider(Slider slider, float manaPoints)
+    private void UpdateManaSlider(Slider slider, float currentManaPoints, float maxManaPoints)
     {
         if (slider != null)
         {
-            slider.value = manaPoints;
+            slider.maxValue = maxManaPoints;
+            slider.value = currentManaPoints;
             Debug.Log("Mana slider updated.");
         }
         else
@@ -106,7 +109,8 @@ public class CombatManager : MonoBehaviour
     {
         if (enemy != null && enemyHealthSlider != null)
         {
-            enemyHealthSlider.value = enemy.nonPlayerHealthPoints;
+            enemyHealthSlider.maxValue = enemy.nonPlayerHealthPoints; // Set the maximum value of the slider
+            enemyHealthSlider.value = enemy.nonPlayerHealthPoints; // Set the current value of the slider
             Debug.Log("Enemy health slider updated.");
         }
         else
@@ -239,11 +243,13 @@ public class CombatManager : MonoBehaviour
         Debug.Log("Enemy's turn.");
         player.TakeDamage(enemy.nonPlayerDamage);
         Debug.Log("Enemy attacks!");
+        UpdateHealthSlider(playerHealthSlider, player.getPlayerCurrentHealthPoints(), player.getPlayerHealthPoints());
+        UpdateManaSlider(playerManaSlider, player.getPlayerCurrentManaPoints(), player.getPlayerManaPoints());
 
         yield return new WaitForSeconds(1f); // Simulated delay before transitioning to player's turn
 
         // Check if the player's health points are zero
-        if (player.getPlayerHealthPoints() <= 0)
+        if (player.getPlayerCurrentHealthPoints() <= 0)
         {
             EndBattle(false); // Player loses
             yield break; // Exit the coroutine
@@ -261,13 +267,49 @@ public class CombatManager : MonoBehaviour
         if (playerWins)
         {
             // Player wins - handle the victory scenario
-            Debug.Log("Victory! Implement logic to reward the player, such as gaining experience points, looting items, etc.");
+            Debug.Log("Victory!");
+            DestroyEnemyIfDead();
+            ChangeToVictoryScene();
         }
         else
         {
             // Player loses - handle the defeat scenario
-            Debug.Log("Defeat! Implement logic for what happens when the player loses, such as game over, returning to a checkpoint, etc.");
+            Debug.Log("Defeat!");
+            ReturnToPreviousMenu();
         }
     }
 
+    private void ChangeToVictoryScene()
+    {
+        SceneManager.LoadScene("Gameplay"); // Load the victory scene
+    }
+
+  private void ReturnToPreviousMenu()
+    {
+        // Find all objects with the "Enemy" tag and destroy them
+        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        foreach (GameObject enemy in enemies)
+        {
+            Destroy(enemy);
+        }
+
+        // Find all objects with the "Player" tag and destroy them
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        foreach (GameObject player in players)
+        {
+            Destroy(player);
+        }
+
+        // Load the previous menu scene
+        SceneManager.LoadScene("classChoice");
+    }
+
+    private void DestroyEnemyIfDead()
+    {
+        if (enemy != null && enemy.nonPlayerHealthPoints <= 0)
+        {
+            Debug.Log("Destroying enemy with zero health points.");
+            Destroy(enemy.gameObject); // Destroy the enemy game object
+        }
+    }
 }
